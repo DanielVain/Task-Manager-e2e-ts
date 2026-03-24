@@ -39,6 +39,38 @@ function App() {
             alert("Could not delete the task. Is the server running?");
         }
     };
+    const handleToggle = async (task: Task) => {
+        try {
+            const response = await axios.put<Task>(`${API_URL}/${task.id}`, {
+                ...task,
+                completed: !task.completed,
+            });
+
+            // Update the local state
+            setTasks((prev) =>
+                prev.map((t) => (t.id === task.id ? response.data : t)),
+            );
+        } catch (error) {
+            console.error("Failed to toggle task:", error);
+        }
+    };
+    const handleEdit = async (task: Task) => {
+        const newTitle = window.prompt("Edit task title:", task.title);
+        if (!newTitle || newTitle === task.title) return;
+
+        try {
+            const response = await axios.put<Task>(`${API_URL}/${task.id}`, {
+                ...task,
+                title: newTitle,
+            });
+
+            setTasks((prev) =>
+                prev.map((t) => (t.id === task.id ? response.data : t)),
+            );
+        } catch (error) {
+            console.error("Failed to edit task:", error);
+        }
+    };
 
     return (
         <div className="app-container">
@@ -49,44 +81,40 @@ function App() {
 
             <div className="task-list">
                 {tasks.map((task) => (
-                    <div key={task.id} className="task-item">
-                        <input
-                            type="checkbox"
-                            checked={task.completed}
-                            readOnly
-                        />
-                        <span>{task.title}</span>
-                    </div>
-                ))}
-            </div>
-            <div className="task-list">
-                {tasks.map((task) => (
                     <div
                         key={task.id}
                         className="task-item"
                         style={{
                             display: "flex",
                             gap: "10px",
-                            marginBottom: "5px",
+                            alignItems: "center",
                         }}
                     >
+                        {/* Toggle Checkbox */}
                         <input
                             type="checkbox"
                             checked={task.completed}
-                            readOnly
+                            onChange={() => handleToggle(task)}
+                            style={{ cursor: "pointer" }}
                         />
-                        <span style={{ flex: 1 }}>{task.title}</span>
 
-                        {/* Add the Delete Button here */}
-                        <button
-                            onClick={() => handleDelete(task.id)}
+                        <span
                             style={{
-                                backgroundColor: "#ff4d4d",
-                                color: "white",
-                                border: "none",
-                                cursor: "pointer",
+                                flex: 1,
+                                textDecoration: task.completed
+                                    ? "line-through"
+                                    : "none",
+                                color: task.completed ? "#888" : "inherit",
                             }}
                         >
+                            {task.title}
+                        </span>
+
+                        {/* Edit Button */}
+                        <button onClick={() => handleEdit(task)}>Edit</button>
+
+                        {/* Delete Button (From previous branch) */}
+                        <button onClick={() => handleDelete(task.id)}>
                             Delete
                         </button>
                     </div>
