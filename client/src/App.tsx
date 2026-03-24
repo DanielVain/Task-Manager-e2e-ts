@@ -27,6 +27,19 @@ function App() {
         setTasks((prev) => [...prev, newTask]);
     };
 
+    const handleDelete = async (id: number) => {
+        try {
+            // 1. Tell the backend to delete it
+            await axios.delete(`${API_URL}/${id}`);
+
+            // 2. Update the UI state by filtering out the deleted ID
+            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+        } catch (error) {
+            console.error("Failed to delete task:", error);
+            alert("Could not delete the task. Is the server running?");
+        }
+    };
+
     return (
         <div className="app-container">
             <h1>Task Manager</h1>
@@ -43,6 +56,39 @@ function App() {
                             readOnly
                         />
                         <span>{task.title}</span>
+                    </div>
+                ))}
+            </div>
+            <div className="task-list">
+                {tasks.map((task) => (
+                    <div
+                        key={task.id}
+                        className="task-item"
+                        style={{
+                            display: "flex",
+                            gap: "10px",
+                            marginBottom: "5px",
+                        }}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={task.completed}
+                            readOnly
+                        />
+                        <span style={{ flex: 1 }}>{task.title}</span>
+
+                        {/* Add the Delete Button here */}
+                        <button
+                            onClick={() => handleDelete(task.id)}
+                            style={{
+                                backgroundColor: "#ff4d4d",
+                                color: "white",
+                                border: "none",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Delete
+                        </button>
                     </div>
                 ))}
             </div>
